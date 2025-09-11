@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Submitted – Kiwi's Bakery</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: 'YourCustomFont', sans-serif; /* Replace with your actual font name */
+            background-color: #fffaf5;
+            color: #4a2c2a;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background-color: #fbe3d4;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar img {
+            height: 50px;
+            cursor: pointer;
+        }
+        .content {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        .message {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .venmo {
+            font-weight: bold;
+            color: #d17c7c;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top banner with logo button -->
+    <div class="navbar">
+        <a href="{{ url_for('main.index') }}">
+            <img src="{{ url_for('static', filename='images/KiwisLogo.png') }}" alt="Kiwi's Bakery Logo">
+        </a>
+    </div>
+
+    <div class="content">
+        <h1>Thank You So Much for Your Order! 🧁</h1>
+
+        <div class="message">
+            We're thrilled to start baking for you.  
+            <br><br>
+            Please Venmo <span class="venmo">@jasminshasanain</span> to confirm your order.  
+            <br><br>
+            We'll begin preparing your treats within the next <strong>2–3 days</strong>.
+            <br><br>
+            If you have any questions, feel free to reach out via our contact page.
+        </div>
+    </div>
+
+</body>
+</html>

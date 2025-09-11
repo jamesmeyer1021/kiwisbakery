@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Cookies</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Add Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Beth+Ellen&display=swap" rel="stylesheet">
+  <style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Arial', sans-serif;
+    }
+    /* Sticky Navigation Bar */
+    .sticky-bar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background-color: #fff;
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+    }
+    .sticky-bar h1 {
+        font-family: 'Beth Ellen', cursive;
+        font-size: 1.5rem;
+        margin: 0 auto; /* Center the text */
+    }
+    .sticky-bar .logo-small {
+        width: 50px;
+        height: auto;
+    }
+    .banner {
+        display: block;
+        margin: 20px auto;
+        width: 100%;
+        max-width: 800px;
+        height: auto;
+    }
+    .cookie-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        overflow: hidden; /* Prevent content from overflowing */
+        background-color: #fff; /* Add a background color */
+    }
+    .cookie-card:hover {
+        transform: scale(1.05);
+    }
+    .cookie-image {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .cookie-title {
+        font-family: 'Beth Ellen', cursive;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 10px;
+    }
+    .cookie-description-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        margin: 10px auto;
+    }
+    .select-btn {
+        background-color: #c88860;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin: 10px auto;
+        display: block;
+        text-align: center;
+        transition: background-color 0.3s ease;
+    }
+    .select-btn:hover {
+        background-color: #c88860;
+    }
+    .cart-icon {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        cursor: pointer;
+        z-index: 1100;
+        padding: 10px;
+    }
+    .cart-image {
+        width: 40px;
+        height: auto;
+    }
+    .cart-popup {
+        position: fixed;
+        display: none;
+        z-index: 9999;
+        top: 70px;
+        right: 20px;
+        padding: 24px;
+        font-size: 1rem;
+        line-height: 1.6;
+        background-color: #fff9e6;
+        border: 1px solid #c88860;
+        box-shadow: 0 4px 8px rgba(200, 136, 96, 0.3);
+        border-radius: 12px;
+        width: 320px;
+    }
+    .cart-popup h5 {
+        font-family: 'Beth Ellen', cursive;
+        font-size: 1.4rem;
+        color: #c88860;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    #cart-list .list-group-item {
+        padding: 14px 12px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background-color: #fff;
+        border: 1px solid #e0c4b0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .cart-controls {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+    #cart-total {
+        margin-top: 1rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #c88860;
+        text-align: right;
+    }
+    #checkout-btn,
+    .cart-popup .btn-danger {
+        width: 100%;
+        padding: 10px;
+        font-size: 0.95rem;
+        margin-top: 10px;
+        border-radius: 6px;
+    }
+    #checkout-btn {
+        background-color: #c88860;
+        color: white;
+        border: none;
+    }
+    #checkout-btn:hover {
+        background-color: #b37655;
+    }
+    @keyframes cartShake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        50% { transform: translateX(4px); }
+        75% { transform: translateX(-4px); }
+        100% { transform: translateX(0); }
+    }
+    .cart-icon.shake {
+        animation: cartShake 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sticky Navigation Bar -->
+  <div class="sticky-bar">
+    <img src="{{ url_for('static', filename='images/KiwisLogo.png') }}" alt="Kiwi's Bakery Logo" class="logo-small">
+    <h1>Order Online</h1>
+    <div class="cart-icon" onclick="toggleCart()">
+        <img src="{{ url_for('static', filename='images/CatCart.png') }}" alt="Cart" class="cart-image">
+      </div>
+  </div>
+
+  <!-- Cart Icon Popup -->
+  <div id="cart-popup" class="cart-popup">
+    <h5>Your Cart</h5>
+    <ul id="cart-list" class="list-group mb-3"></ul>
+    <div id="cart-total" class="mb-3 fw-bold">Total: $0.00</div>
+    <button id="checkout-btn" class="btn btn-success btn-sm">Checkout</button>
+    <button class="btn btn-danger btn-sm mt-2" onclick="closeCart()">Close</button>
+  </div>
+
+  <!-- Banner -->
+  <img src="{{ url_for('static', filename='images/KiwisBanner.png') }}" alt="Kiwi's Bakery Banner" class="banner">
+
+  <div class="container py-5">
+    <div class="row">
+      <!-- Double Chocolate Cookie -->
+      <div class="col-md-4">
+        <div class="cookie-card">
+          <img src="{{ url_for('static', filename='images/DoubleChocolateCookie.png') }}" alt="Double Chocolate Cookie" class="cookie-image">
+          <div class="cookie-title">Double Chocolate Cookie</div>
+          <button class="select-btn" onclick="addToCart('Double Chocolate Cookie', 3.50)">Add</button>
+        </div>
+      </div>
+
+      <!-- Brown Butter Chocolate Cookie -->
+      <div class="col-md-4">
+        <div class="cookie-card">
+          <img src="{{ url_for('static', filename='images/BrownButterChocolate.png') }}" alt="Brown Butter Chocolate Cookie" class="cookie-image">
+          <div class="cookie-title">Brown Butter Chocolate Cookie</div>
+          <button class="select-btn" onclick="addToCart('Brown Butter Chocolate Cookie', 3.50)">Add</button>
+        </div>
+      </div>
+
+      <!-- Pumpkin Snickerdoodle Cookie -->
+      <div class="col-md-4">
+        <div class="cookie-card">
+          <img src="{{ url_for('static', filename='images/PumpkinSnicker.png') }}" alt="Pumpkin Snickerdoodle Cookie" class="cookie-image">
+          <div class="cookie-title">Pumpkin Snickerdoodle Cookie</div>
+          <button class="select-btn" onclick="addToCart('Pumpkin Snickerdoodle Cookie', 3.50)">Add</button>
+        </div>
+      </div>
+
+      <!-- Jalapeno Focaccia -->
+      <div class="col-md-4">
+        <div class="cookie-card">
+          <img src="{{ url_for('static', filename='images/JalapanoFoccia.png') }}" alt="Jalapeno Focaccia" class="cookie-image">
+          <div class="cookie-title">Jalapeno Focaccia</div>
+          <button class="select-btn" onclick="addToCart('Jalapeno Focaccia', 3.50)">Add</button>
+        </div>
+      </div>
+
+      <!-- Mini Focaccia -->
+      <div class="col-md-4">
+        <div class="cookie-card">
+          <img src="{{ url_for('static', filename='images/MiniFoccia.png') }}" alt="Mini Focaccia" class="cookie-image">
+          <div class="cookie-title">Mini Focaccia</div>
+          <button class="select-btn" onclick="addToCart('Mini Focaccia', 3.50)">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cart = [];
+
+    function addToCart(itemName, itemPrice) {
+        const existingItem = cart.find(item => item.name === itemName);
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({ name: itemName, quantity: 1, price: itemPrice });
+        }
+
+        const cartIcon = document.querySelector('.cart-icon');
+        cartIcon.classList.add('shake');
+
+        // Remove the class after animation ends so it can be triggered again
+        setTimeout(() => {
+            cartIcon.classList.remove('shake');
+        }, 400);
+
+        renderCart();
+    }
+
+
+    function renderCart() {
+        const cartList = document.getElementById('cart-list');
+        cartList.innerHTML = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+            const itemText = document.createElement('div');
+            itemText.innerHTML = `<strong>${item.name}</strong><br>Qty: ${item.quantity} × $${item.price.toFixed(2)}`;
+
+            const controls = document.createElement('div');
+
+            const minusBtn = document.createElement('button');
+            minusBtn.className = 'btn btn-sm btn-outline-secondary me-1';
+            minusBtn.textContent = '-';
+            minusBtn.onclick = () => {
+            item.quantity -= 1;
+            if (item.quantity <= 0) cart.splice(index, 1);
+            renderCart();
+            };
+
+            const plusBtn = document.createElement('button');
+            plusBtn.className = 'btn btn-sm btn-outline-secondary me-1';
+            plusBtn.textContent = '+';
+            plusBtn.onclick = () => {
+            item.quantity += 1;
+            renderCart();
+            };
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-sm btn-outline-danger';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = () => {
+            cart.splice(index, 1);
+            renderCart();
+            };
+
+            controls.appendChild(minusBtn);
+            controls.appendChild(plusBtn);
+            controls.appendChild(removeBtn);
+
+            li.appendChild(itemText);
+            li.appendChild(controls);
+            cartList.appendChild(li);
+
+            total += item.quantity * item.price;
+        });
+
+        const totalDisplay = document.getElementById('cart-total');
+        totalDisplay.textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    function toggleCart() {
+        const popup = document.getElementById('cart-popup');
+        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function closeCart() {
+        document.getElementById('cart-popup').style.display = 'none';
+    }
+
+    document.addEventListener('click', function(event) {
+        const cartPopup = document.getElementById('cart-popup');
+        const cartIcon = document.querySelector('.cart-icon');
+
+        // If cart is visible and click is outside both the cart and the icon
+        if (cartPopup.style.display === 'block' &&
+            !cartPopup.contains(event.target) &&
+            !cartIcon.contains(event.target)) {
+            cartPopup.style.display = 'none';
+        }
+    });
+
+    document.getElementById('checkout-btn').onclick = () => {
+        // Save the cart to localStorage so it can be accessed on the next page
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        // Redirect to the /checkout page
+        window.location.href = '/checkout';
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <footer class="text-center py-4" style="font-size: 0.9rem; color: #666;">
+    <p>&copy; {{ current_year }} Kiwi's Bakery – Lakewood, Ohio</p>
+    <p>
+      <a href="mailto:kiwis.cle@gmail.com" style="color: #666;">Contact Us</a>
+      |
+      <a href="/privacy" style="color: #666;">Privacy Policy</a>
+      |
+      <a href="/terms" style="color: #666;">Terms of Service</a>
+    </p>
+  </footer>
+</body>
+</html>
