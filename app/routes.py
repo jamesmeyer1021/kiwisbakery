@@ -5,6 +5,7 @@ from .config import DB_PARAMS,SECRET_KEY
 from .sheets import log_order, log_order_item
 from . import mail
 from flask_mail import Message
+import re
 
 main = Blueprint('main', __name__)
 
@@ -19,17 +20,26 @@ def checkout():
 @main.route('/submit_order', methods=['POST'])
 def submit_order():
     data = request.json
-
-    # Fallback order number if not provided
+    EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    PHONE_REGEX = r"^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
+    print(EMAIL_REGEX)
     order_number = data.get('order_number', int(datetime.now().timestamp()))
     customer_name = data.get('customer_name')
     customer_email = data.get('customer_email')
     customer_phone = data.get('customer_phone')
     order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Basic validation
+    # Basic presence check
     if not all([customer_name, customer_email, customer_phone]):
         return jsonify({"status": "error", "message": "Missing customer info"}), 400
+
+    print(f"Received order: {order_number} for {customer_name}, email: {customer_email}, phone: {customer_phone}")
+    # Format validation
+    if not re.match(EMAIL_REGEX, customer_email):
+        return jsonify({"status": "error", "message": "Invalid email format"}), 400
+
+    if not re.match(PHONE_REGEX, customer_phone):
+        return jsonify({"status": "error", "message": "Invalid phone format"}), 400
 
     # Log the order
     log_order(order_number, customer_name, customer_email, customer_phone, order_date)

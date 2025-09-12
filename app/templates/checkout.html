@@ -80,8 +80,14 @@
 
     <form id="checkout-form">
       <input type="text" id="customer-name" placeholder="Your Name" required class="form-control mb-3">
-      <input type="text" id="customer-email" placeholder="Your Email" required class="form-control mb-3">
-      <input type="text" id="customer-phone" placeholder="Your Phone Number" required class="form-control mb-3">
+        <div class="mb-3">
+        <input type="text" id="customer-email" class="form-control" placeholder="Your Email" required>
+        <div class="invalid-feedback">Please enter a valid email address.</div>
+      </div>
+      <div class="mb-3">
+        <input type="text" id="customer-phone" class="form-control" placeholder="Your Phone Number" required>
+        <div class="invalid-feedback">Please enter a valid phone number.</div>
+      </div>
       <button type="submit" class="btn custom-submit-btn" id="submit-btn">
         <span id="submit-text">Submit Order</span>
         <span id="submit-spinner" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true" style="display: none;"></span>
@@ -119,8 +125,34 @@
     spinner.style.display = 'inline-block';
 
     const customerName = document.getElementById('customer-name').value;
-    const customerEmail = document.getElementById('customer-email').value;
-    const customerPhone = document.getElementById('customer-phone').value;
+    const customerEmail = document.getElementById('customer-email');
+    const customerPhone = document.getElementById('customer-phone');
+
+    const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    const phoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+
+    let valid = true;
+
+    if (!emailRegex.test(customerEmail.value)) {
+      customerEmail.classList.add('is-invalid');
+      valid = false;
+    } else {
+      customerEmail.classList.remove('is-invalid');
+    }
+
+    if (!phoneRegex.test(customerPhone.value)) {
+      customerPhone.classList.add('is-invalid');
+      valid = false;
+    } else {
+      customerPhone.classList.remove('is-invalid');
+    }
+
+    if (!valid) {
+      btn.disabled = false;
+      text.textContent = 'Submit Order';
+      spinner.style.display = 'none';
+      return;
+    }
 
     fetch('/submit_order', {
       method: 'POST',
@@ -132,19 +164,26 @@
         items: cart
       })
     })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(data => {
+          alert(data.message || "Something went wrong.");
+          throw new Error("Validation failed");
+        });
+      }
+      return res.json();
+    })
     .then(data => {
       localStorage.removeItem('cart');
       window.location.href = '/orderSubmitted';
     })
     .catch(err => {
       console.error(err);
-      alert('Error submitting order.');
-      // Reset button if error occurs
       btn.disabled = false;
       text.textContent = 'Submit Order';
       spinner.style.display = 'none';
     });
+
   };
 
   renderCheckoutCart();
