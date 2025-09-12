@@ -96,3 +96,7 @@ def privacy():
 @main.route('/terms')
 def terms():
     return render_template('terms.html')
+
+@main.route("/ping")
+def ping():
+    return "pong", 200
