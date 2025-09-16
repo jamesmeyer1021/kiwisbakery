@@ -6,7 +6,7 @@
   <title>Checkout - Kiwi's Bakery</title>
   <link rel="icon" href="{{ url_for('static', filename='images/KiwisLogo.png') }}" type="image/png">
   <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> 
   <!-- Google Font: Beth Ellen -->
   <link href="https://fonts.googleapis.com/css2?family=Beth+Ellen&display=swap" rel="stylesheet">
 
@@ -78,8 +78,11 @@
     <ul id="checkout-cart-list" class="list-group mb-3"></ul>
 
     <form id="checkout-form">
-      <input type="text" id="customer-name" placeholder="Your Name" required class="form-control mb-3">
-        <div class="mb-3">
+      <div class="mb-3">
+        <input type="text" id="customer-name" class="form-control" placeholder="Your Name" required>
+        <div class="invalid-feedback">Please enter your name.</div>
+      </div>
+      <div class="mb-3">
         <input type="text" id="customer-email" class="form-control" placeholder="Your Email" required>
         <div class="invalid-feedback">Please enter a valid email address.</div>
       </div>
@@ -123,27 +126,41 @@
     text.textContent = 'Processing...';
     spinner.style.display = 'inline-block';
 
-    const customerName = document.getElementById('customer-name').value;
-    const customerEmail = document.getElementById('customer-email');
-    const customerPhone = document.getElementById('customer-phone');
+    const nameInput = document.getElementById('customer-name');
+    const emailInput = document.getElementById('customer-email');
+    const phoneInput = document.getElementById('customer-phone');
+
+    const customerName = nameInput.value.trim();
+    const customerEmail = emailInput.value.trim();
+    const customerPhone = phoneInput.value.trim();
 
     const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
     const phoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
 
     let valid = true;
 
-    if (!emailRegex.test(customerEmail.value)) {
-      customerEmail.classList.add('is-invalid');
+    // Name presence check
+    if (!customerName) {
+      nameInput.classList.add('is-invalid');
       valid = false;
     } else {
-      customerEmail.classList.remove('is-invalid');
+      nameInput.classList.remove('is-invalid');
     }
 
-    if (!phoneRegex.test(customerPhone.value)) {
-      customerPhone.classList.add('is-invalid');
+    // Email format check
+    if (!emailRegex.test(customerEmail)) {
+      emailInput.classList.add('is-invalid');
       valid = false;
     } else {
-      customerPhone.classList.remove('is-invalid');
+      emailInput.classList.remove('is-invalid');
+    }
+
+    // Phone format check
+    if (!phoneRegex.test(customerPhone)) {
+      phoneInput.classList.add('is-invalid');
+      valid = false;
+    } else {
+      phoneInput.classList.remove('is-invalid');
     }
 
     if (!valid) {
@@ -152,6 +169,8 @@
       spinner.style.display = 'none';
       return;
     }
+
+    console.log("Submitting order...");
 
     fetch('/submit_order', {
       method: 'POST',
@@ -177,12 +196,11 @@
       window.location.href = '/orderSubmitted';
     })
     .catch(err => {
-      console.error(err);
+      console.error("Submission error:", err);
       btn.disabled = false;
       text.textContent = 'Submit Order';
       spinner.style.display = 'none';
     });
-
   };
 
   renderCheckoutCart();

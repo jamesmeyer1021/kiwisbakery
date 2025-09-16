@@ -22,7 +22,7 @@ def submit_order():
     data = request.json
     EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     PHONE_REGEX = r"^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"
-    print(EMAIL_REGEX)
+
     order_number = data.get('order_number', int(datetime.now().timestamp()))
     customer_name = data.get('customer_name')
     customer_email = data.get('customer_email')
@@ -30,14 +30,16 @@ def submit_order():
     order_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Basic presence check
-    if not all([customer_name, customer_email, customer_phone]):
-        return jsonify({"status": "error", "message": "Missing customer info"}), 400
+    if not customer_name:
+        return jsonify({"status": "error", "message": "Missing customer name"}), 400
+    if not customer_email:
+        return jsonify({"status": "error", "message": "Missing email"}), 400
+    if not customer_phone:
+        return jsonify({"status": "error", "message": "Missing phone number"}), 400
 
-    print(f"Received order: {order_number} for {customer_name}, email: {customer_email}, phone: {customer_phone}")
     # Format validation
     if not re.match(EMAIL_REGEX, customer_email):
         return jsonify({"status": "error", "message": "Invalid email format"}), 400
-
     if not re.match(PHONE_REGEX, customer_phone):
         return jsonify({"status": "error", "message": "Invalid phone format"}), 400
 
